@@ -18,13 +18,11 @@ package io.gatling.scanner;
 
 import io.gatling.internal.asm.ClassReader;
 import io.gatling.internal.asm.tree.ClassNode;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
-import org.apache.commons.io.IOUtils;
 
 public class AsmSimulationScanner {
 
@@ -34,10 +32,23 @@ public class AsmSimulationScanner {
   private static final List<String> SIMULATION_CLASSES =
       Arrays.asList("io/gatling/javaapi/core/Simulation", "io/gatling/core/scenario/Simulation");
 
+  private static final byte[] TO_BYTE_ARRAY_BUFFER = new byte[8 * 1024];
+
+  // replace with InputStream#readAllBytes when we'll drop Java 8 support
+  private static byte[] toByteArray(InputStream is) throws IOException {
+    int n;
+    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+      while ((n = is.read(TO_BYTE_ARRAY_BUFFER)) != -1) {
+        os.write(TO_BYTE_ARRAY_BUFFER, 0, n);
+      }
+      return os.toByteArray();
+    }
+  }
+
   private static Optional<byte[]> bytesFromJarEntry(JarFile jar, JarEntry entry)
       throws IOException {
     if (entry.getName().endsWith(JAR_ENTRY_CLASS_SUFFIX)) {
-      return Optional.of(IOUtils.toByteArray(jar.getInputStream(entry)));
+      return Optional.of(toByteArray(new BufferedInputStream(jar.getInputStream(entry))));
     } else {
       return Optional.empty();
     }

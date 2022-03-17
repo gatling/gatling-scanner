@@ -20,32 +20,29 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Objects;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AsmSimulationScannerTest {
 
-  private File testFile;
+  private static File testFile;
+
+  static {
+    try {
+      testFile =
+          Paths.get(AsmSimulationScannerTest.class.getResource("/gatling-simulations.jar").toURI())
+              .toFile();
+    } catch (URISyntaxException e) {
+      throw new ExceptionInInitializerError(e);
+    }
+  }
 
   @Test
   public void findAllSimulationFullyQualifiedNames() throws IOException {
     assertEquals(
         AsmSimulationScanner.simulationFullyQualifiedNamesFromFile(testFile),
         Arrays.asList("computerdatabase.ConcreteSimulation", "computerdatabase.BasicSimulation"));
-  }
-
-  @BeforeAll
-  public void createTestFile() throws IOException {
-    this.testFile = File.createTempFile("gatling-simulations", ".jar");
-    IOUtils.copy(
-        Objects.requireNonNull(getClass().getResource("/gatling-simulations.jar")), testFile);
-  }
-
-  @AfterAll
-  public void cleanTestFile() {
-    testFile.delete();
   }
 }

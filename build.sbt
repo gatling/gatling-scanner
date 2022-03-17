@@ -25,7 +25,6 @@ lazy val root = (project in file("."))
     autoScalaLibrary := false, // exclude scala-library from dependencies
     libraryDependencies ++= Seq(
       "io.gatling"                 % "gatling-asm-shaded"   % "9.2",
-      "commons-io"                 % "commons-io"           % "2.11.0",
       "org.junit.jupiter"          % "junit-jupiter-engine" % junitVersion                     % Test,
       "org.junit.jupiter"          % "junit-jupiter-api"    % junitVersion                     % Test,
       "net.aichler"                % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test
