@@ -6,6 +6,8 @@ version := "1.0.0"
 
 scalaVersion := "2.13.8"
 
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+
 inScope(Global) {
   Seq(
     githubPath := "gatling/gatling-scanner",
