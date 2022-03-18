@@ -2,7 +2,7 @@ import net.moznion.sbt.spotless.config.{ GoogleJavaFormatConfig, JavaConfig, Spo
 
 name := "gatling-scanner"
 
-version := "0.1"
+version := "1.0.0"
 
 scalaVersion := "2.13.8"
 
