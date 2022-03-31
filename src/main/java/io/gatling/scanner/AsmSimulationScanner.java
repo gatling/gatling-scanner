@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 public class AsmSimulationScanner {
 
+  private static final String MODULE_INFO_NAME = "module-info";
   private static final String JAR_ENTRY_CLASS_SUFFIX = ".class";
   private static final byte[] JAVA_CLASS_MAGIC_BYTES = new byte[] {-54, -2, -70, -66};
   private static final String ROOT_CLASS_NAME = "java/lang/Object";
@@ -81,7 +82,11 @@ public class AsmSimulationScanner {
       throws IOException {
     return bytesFromJarEntry(jar, entry)
         .flatMap(AsmSimulationScanner::classNodeFromBytes)
-        .filter(classNode -> !classNode.superName.equals(ROOT_CLASS_NAME))
+        .filter(
+            classNode ->
+                !classNode.name.equals(MODULE_INFO_NAME)
+                    && classNode.superName != null
+                    && !classNode.superName.equals(ROOT_CLASS_NAME))
         .map(AsmClass::new);
   }
 
