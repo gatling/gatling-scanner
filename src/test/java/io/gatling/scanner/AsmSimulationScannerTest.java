@@ -27,22 +27,25 @@ import org.junit.jupiter.api.*;
 
 public class AsmSimulationScannerTest {
 
-  private static File testFile;
-
-  static {
-    try {
-      testFile =
-          Paths.get(AsmSimulationScannerTest.class.getResource("/gatling-simulations.jar").toURI())
-              .toFile();
-    } catch (URISyntaxException e) {
-      throw new ExceptionInInitializerError(e);
-    }
+  private File testJar(String name) throws URISyntaxException {
+    return Paths.get(AsmSimulationScannerTest.class.getResource("/" + name + ".jar").toURI())
+        .toFile();
   }
 
   @Test
-  public void findAllSimulationFullyQualifiedNames() throws IOException {
+  public void findAllSimulationFullyQualifiedNames()
+      throws UnsupportedJavaMajorVersionException, URISyntaxException, IOException {
     assertEquals(
-        AsmSimulationScanner.simulationFullyQualifiedNamesFromFile(testFile),
+        AsmSimulationScanner.simulationFullyQualifiedNamesFromFile(testJar("gatling-simulations")),
         Arrays.asList("computerdatabase.ConcreteSimulation", "computerdatabase.BasicSimulation"));
+  }
+
+  @Test
+  public void rejectJava18() {
+    assertThrows(
+        UnsupportedJavaMajorVersionException.class,
+        () ->
+            AsmSimulationScanner.simulationFullyQualifiedNamesFromFile(
+                testJar("simulation-java-18")));
   }
 }

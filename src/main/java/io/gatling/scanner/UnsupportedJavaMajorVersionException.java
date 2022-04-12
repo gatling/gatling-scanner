@@ -16,23 +16,16 @@
 
 package io.gatling.scanner;
 
-import io.gatling.internal.asm.Opcodes;
-import io.gatling.internal.asm.tree.ClassNode;
+public class UnsupportedJavaMajorVersionException extends RuntimeException {
 
-public class AsmClass {
-
-  public final String name;
-  public final String parentName;
-  public final boolean concrete;
-
-  AsmClass(ClassNode classNode) throws UnsupportedJavaMajorVersionException {
-    JavaMajorVersion.checkNode(classNode, JavaMajorVersion.JAVA_17);
-    this.name = classNode.name;
-    this.parentName = classNode.superName;
-    this.concrete = (classNode.access & Opcodes.ACC_ABSTRACT) == 0;
-  }
-
-  public String fullyQualifiedName() {
-    return name.replace('/', '.');
+  public UnsupportedJavaMajorVersionException(
+      int classMajorVersion, String className, JavaMajorVersion majorVersion) {
+    super(
+        String.format(
+            "Unsupported Java version higher than %s (current: %d, highest: %d) on class '%s'",
+            majorVersion.noun,
+            classMajorVersion,
+            majorVersion.majorVersion,
+            className.replace("/", ".")));
   }
 }

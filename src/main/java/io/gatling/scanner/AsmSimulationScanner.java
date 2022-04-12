@@ -79,7 +79,7 @@ public class AsmSimulationScanner {
   }
 
   private static Optional<AsmClass> candidateFromJarEntry(JarFile jar, JarEntry entry)
-      throws IOException {
+      throws UnsupportedJavaMajorVersionException, IOException {
     return bytesFromJarEntry(jar, entry)
         .flatMap(AsmSimulationScanner::classNodeFromBytes)
         .filter(
@@ -108,7 +108,16 @@ public class AsmSimulationScanner {
             .orElse(false);
   }
 
-  public static List<String> simulationFullyQualifiedNamesFromJar(JarFile jar) throws IOException {
+  /**
+   * Collect simulation fully qualified names in a jar
+   *
+   * @param jar simulation JAR
+   * @return List of discovered simulations fully qualified names in given jar
+   * @throws UnsupportedJavaMajorVersionException when a class node in jar have an unsupported java
+   *     major version
+   */
+  public static List<String> simulationFullyQualifiedNamesFromJar(JarFile jar)
+      throws UnsupportedJavaMajorVersionException, IOException {
     Map<String, AsmClass> candidates = candidatesFromJar(jar);
     return candidates.values().stream()
         .filter(candidate -> candidate.concrete && isAncestorSimulation(candidate, candidates))
@@ -116,7 +125,16 @@ public class AsmSimulationScanner {
         .collect(Collectors.toList());
   }
 
-  public static List<String> simulationFullyQualifiedNamesFromFile(File file) throws IOException {
+  /**
+   * Collect simulation fully qualified names in a jar
+   *
+   * @param file simulation JAR file
+   * @return List of discovered simulations fully qualified names in given jar
+   * @throws UnsupportedJavaMajorVersionException when a class node in jar have an unsupported java
+   *     major version
+   */
+  public static List<String> simulationFullyQualifiedNamesFromFile(File file)
+      throws UnsupportedJavaMajorVersionException, IOException {
     try (JarFile jar = new JarFile(file)) {
       return simulationFullyQualifiedNamesFromJar(jar);
     }
