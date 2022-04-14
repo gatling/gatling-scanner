@@ -42,7 +42,12 @@ public class AsmSimulationScannerTest {
   @Test
   public void findAllSimulationFullyQualifiedNames() throws IOException {
     assertEquals(
-        AsmSimulationScanner.simulationFullyQualifiedNamesFromFile(testFile),
-        Arrays.asList("computerdatabase.ConcreteSimulation", "computerdatabase.BasicSimulation"));
+        new SimulationScanResult(
+            Arrays.asList(
+                "computerdatabase.ConcreteSimulation",
+                "computerdatabase.BasicSimulation",
+                "TestRecordedSimulation"),
+            new HighestJavaVersionClass("TestRecordedSimulation", 18)),
+        AsmSimulationScanner.scan(testFile));
   }
 }

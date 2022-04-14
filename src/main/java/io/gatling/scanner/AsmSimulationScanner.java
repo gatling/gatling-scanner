@@ -90,14 +90,22 @@ public class AsmSimulationScanner {
         .map(AsmClass::new);
   }
 
-  private static Map<String, AsmClass> candidatesFromJar(JarFile jar) throws IOException {
-    Enumeration<JarEntry> entries = jar.entries();
-    Map<String, AsmClass> candidates = new HashMap<>();
+  private static Map.Entry<AsmClass, Map<String, AsmClass>> candidatesWithHighestJavaVersion(
+      JarFile jar) throws IOException {
+    final Enumeration<JarEntry> entries = jar.entries();
+    final Map<String, AsmClass> candidates = new HashMap<>();
+
+    AsmClass highestClass = null;
     while (entries.hasMoreElements()) {
-      candidateFromJarEntry(jar, entries.nextElement())
-          .ifPresent(asmClass -> candidates.put(asmClass.name, asmClass));
+      AsmClass candidate = candidateFromJarEntry(jar, entries.nextElement()).orElse(null);
+      if (candidate != null) {
+        candidates.put(candidate.name, candidate);
+        if ((highestClass == null || highestClass.javaVersion < candidate.javaVersion)) {
+          highestClass = candidate;
+        }
+      }
     }
-    return candidates;
+    return new AbstractMap.SimpleEntry<>(highestClass, candidates);
   }
 
   private static boolean isAncestorSimulation(
@@ -108,17 +116,25 @@ public class AsmSimulationScanner {
             .orElse(false);
   }
 
-  public static List<String> simulationFullyQualifiedNamesFromJar(JarFile jar) throws IOException {
-    Map<String, AsmClass> candidates = candidatesFromJar(jar);
-    return candidates.values().stream()
-        .filter(candidate -> candidate.concrete && isAncestorSimulation(candidate, candidates))
-        .map(AsmClass::fullyQualifiedName)
-        .collect(Collectors.toList());
+  public static SimulationScanResult scan(JarFile jar) throws IOException {
+    final Map.Entry<AsmClass, Map<String, AsmClass>> result = candidatesWithHighestJavaVersion(jar);
+    final HighestJavaVersionClass highestJavaVersionClass =
+        Optional.ofNullable(result.getKey())
+            .map(clazz -> new HighestJavaVersionClass(clazz.name, clazz.javaVersion))
+            .orElse(null);
+    final Map<String, AsmClass> candidates = result.getValue();
+    final List<String> simulationClasses =
+        candidates.values().stream()
+            .filter(candidate -> candidate.concrete && isAncestorSimulation(candidate, candidates))
+            .map(AsmClass::fullyQualifiedName)
+            .collect(Collectors.toList());
+
+    return new SimulationScanResult(simulationClasses, highestJavaVersionClass);
   }
 
-  public static List<String> simulationFullyQualifiedNamesFromFile(File file) throws IOException {
+  public static SimulationScanResult scan(File file) throws IOException {
     try (JarFile jar = new JarFile(file)) {
-      return simulationFullyQualifiedNamesFromJar(jar);
+      return scan(jar);
     }
   }
 }
