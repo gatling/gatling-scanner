@@ -21,14 +21,18 @@ import io.gatling.internal.asm.tree.ClassNode;
 
 public class AsmClass {
 
+  private static final int JAVA_VERSION_BYTECODE_OFFSET = 44;
+
   public final String name;
   public final String parentName;
   public final boolean concrete;
+  public final int javaVersion;
 
   AsmClass(ClassNode classNode) {
     this.name = classNode.name;
     this.parentName = classNode.superName;
     this.concrete = (classNode.access & Opcodes.ACC_ABSTRACT) == 0;
+    this.javaVersion = (classNode.version & 0x0000FFFF) - JAVA_VERSION_BYTECODE_OFFSET;
   }
 
   public String fullyQualifiedName() {
